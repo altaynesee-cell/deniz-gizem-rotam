@@ -1,0 +1,40 @@
+name: Android APK Olustur
+
+on:
+  push:
+    branches: [ "main", "master", "ana" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: JDK 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Gradle kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Zip dosyasini ac
+        run: unzip -q deniz_gizem_rotam_android_full_v1.zip
+
+      - name: Gradle calistirma izni
+        run: chmod +x DenizGizemRotam/gradlew
+
+      - name: APK olustur
+        run: cd DenizGizemRotam && ./gradlew assembleDebug
+
+      - name: APK dosyasini yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: DenizGizemRotam-debug-apk
+          path: DenizGizemRotam/app/build/outputs/apk/debug/app-debug.apk
