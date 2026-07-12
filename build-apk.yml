@@ -1,0 +1,57 @@
+name: Android APK Olustur
+
+on:
+  push:
+    branches: [ "main", "master", "ana" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: JDK 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Gradle kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Zip dosyasini bul ve ac
+        shell: bash
+        run: |
+          set -e
+          ZIP_FILE="$(find . -maxdepth 1 -type f -name '*.zip' | head -n 1)"
+          test -n "$ZIP_FILE"
+          echo "Bulunan zip: $ZIP_FILE"
+          unzip -q "$ZIP_FILE"
+
+      - name: Proje klasorunu bul
+        shell: bash
+        run: |
+          set -e
+          GRADLEW_FILE="$(find . -type f -name gradlew | head -n 1)"
+          test -n "$GRADLEW_FILE"
+          PROJECT_DIR="$(dirname "$GRADLEW_FILE")"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          echo "Proje klasoru: $PROJECT_DIR"
+
+      - name: Gradle calistirma izni
+        run: chmod +x "$PROJECT_DIR/gradlew"
+
+      - name: APK olustur
+        run: cd "$PROJECT_DIR" && ./gradlew assembleDebug
+
+      - name: APK dosyasini yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: DenizGizemRotam-debug-apk
+          path: "**/app/build/outputs/apk/debug/app-debug.apk"
+          if-no-files-found: error
