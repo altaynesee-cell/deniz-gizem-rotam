@@ -24,17 +24,32 @@ jobs:
         with:
           gradle-version: 8.7
 
-      - name: Zip dosyasini ac
-        run: unzip -q deniz_gizem_rotam_android_full_v1.zip
+      - name: Zip dosyasini bul ve ac
+        run: |
+          echo "Repo dosyalari:"
+          ls -la
+          ZIP_FILE=$(ls *.zip | head -n 1)
+          echo "Bulunan zip: $ZIP_FILE"
+          unzip -q "$ZIP_FILE"
+
+      - name: Proje klasorunu bul
+        run: |
+          echo "Acilan dosyalar:"
+          ls -la
+          PROJECT_DIR=$(find . -name gradlew -type f | head -n 1 | xargs dirname)
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+          echo "Proje klasoru: $PROJECT_DIR"
 
       - name: Gradle calistirma izni
-        run: chmod +x DenizGizemRotam/gradlew
+        run: chmod +x "$PROJECT_DIR/gradlew"
 
       - name: APK olustur
-        run: cd DenizGizemRotam && ./gradlew assembleDebug
+        run: cd "$PROJECT_DIR" && ./gradlew assembleDebug
 
       - name: APK dosyasini yukle
         uses: actions/upload-artifact@v4
         with:
+          name: DenizGizemRotam-debug-apk
+          path: "**/app/build/outputs/apk/debug/app-debug.apk"        with:
           name: DenizGizemRotam-debug-apk
           path: DenizGizemRotam/app/build/outputs/apk/debug/app-debug.apk
